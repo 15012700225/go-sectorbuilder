@@ -28,6 +28,7 @@ require (
 	golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413 // indirect
 	golang.org/x/sys v0.0.0-20191210023423-ac6580df4449 // indirect
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+	gopkg.in/fatih/set.v0 v0.2.1
 )
 
 replace github.com/golangci/golangci-lint => github.com/golangci/golangci-lint v1.18.0

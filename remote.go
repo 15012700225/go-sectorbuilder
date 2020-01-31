@@ -56,8 +56,8 @@ func (sb *SectorBuilder) returnTask(task workerCall) {
 	switch task.task.Type {
 	case WorkerPreCommit:
 		ret = sb.precommitTasks
-	case WorkerCommit:
-		ret = sb.commitTasks
+	//case WorkerCommit:
+	//	ret = sb.commitTasks
 	default:
 		log.Error("unknown task type", task.task.Type)
 	}
@@ -90,16 +90,17 @@ func (sb *SectorBuilder) remoteWorker(ctx context.Context, r *remote, cfg Worker
 	if cfg.NoPreCommit {
 		precommits = nil
 	}
-	commits := sb.commitTasks
-	if cfg.NoCommit {
-		commits = nil
-	}
+	//commits := sb.commitTasks
+	//if cfg.NoCommit {
+	//	commits = nil
+	//}
 
 	for {
 		select {
-		case task := <-commits:
-			sb.doTask(ctx, r, task)
+		//case task := <-commits:
+		//	sb.doTask(ctx, r, task)
 		case task := <-precommits:
+			r.sectorIds = append(r.sectorIds, task.task.SectorID)
 			sb.doTask(ctx, r, task)
 		case <-ctx.Done():
 			return
@@ -119,6 +120,7 @@ func (sb *SectorBuilder) doTask(ctx context.Context, r *remote, task workerCall)
 	sb.remoteLk.Lock()
 	sb.remoteResults[task.task.TaskID] = resCh
 	sb.remoteLk.Unlock()
+
 
 	// send the task
 	select {

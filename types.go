@@ -6,6 +6,7 @@ import (
 	ffi "github.com/filecoin-project/filecoin-ffi"
 	"github.com/filecoin-project/go-address"
 	"github.com/ipfs/go-datastore"
+
 )
 
 type SortedPublicSectorInfo = ffi.SortedPublicSectorInfo
@@ -28,6 +29,7 @@ type EPostCandidate = ffi.Candidate
 const CommLen = ffi.CommitmentBytesLen
 
 type WorkerCfg struct {
+	HostName    string
 	NoPreCommit bool
 	NoCommit    bool
 
@@ -50,7 +52,7 @@ type SectorBuilder struct {
 	rateLimit   chan struct{}
 
 	precommitTasks chan workerCall
-	commitTasks    chan workerCall
+	//commitTasks    chan workerCall
 
 	taskCtr       uint64
 	remoteLk      sync.Mutex
@@ -71,6 +73,10 @@ type SectorBuilder struct {
 
 type remote struct {
 	lk sync.Mutex
+
+	HostName    string
+
+	sectorIds  []uint64
 
 	sealTasks chan<- WorkerTask
 	busy      uint64 // only for metrics
