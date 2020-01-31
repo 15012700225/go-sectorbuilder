@@ -17,7 +17,9 @@ func (sb *SectorBuilder) SectorName(sectorID uint64) string {
 }
 
 func (sb *SectorBuilder) StagedSectorPath(sectorID uint64) string {
-	return filepath.Join(sb.filesystem.pathFor(dataStaging), sb.SectorName(sectorID))
+
+  return filepath.Join(sb.filesystem.pathFor(dataStaging), fmt.Sprintf("s-%s-%d", "staging", sb.ssize))
+	//return filepath.Join(sb.filesystem.pathFor(dataStaging), sb.SectorName(sectorID))
 }
 
 func (sb *SectorBuilder) unsealedSectorPath(sectorID uint64) string {
@@ -25,6 +27,7 @@ func (sb *SectorBuilder) unsealedSectorPath(sectorID uint64) string {
 }
 
 func (sb *SectorBuilder) stagedSectorFile(sectorID uint64) (*os.File, error) {
+
 	return os.OpenFile(sb.StagedSectorPath(sectorID), os.O_RDWR|os.O_CREATE, 0644)
 }
 
