@@ -314,7 +314,60 @@ func (sb *SectorBuilder) SealCommit(ctx context.Context, sectorID uint64, ticket
 
 	atomic.AddInt32(&sb.commitWait, 1)
 
-	select { // prefer remote
+	found := false
+
+	for _, vr := range sb.remotes {
+
+		sectorIds := vr.sectorIds
+
+
+		for i:= 0;i<len(sectorIds);i++{
+			if sectorIds[i] == sectorID {
+				found = true
+				break;
+			}
+		}
+
+		if !found{
+			continue
+		}
+
+		go func() {
+			sb.doTask(ctx, vr, call)
+		}()
+
+		proof, err = sb.sealCommitRemote(call)
+
+
+		/*select { // prefer remote
+		case vr.sealTasks <- call.task:
+
+			go func() {
+				sb.doTask(ctx, vr, call)
+			}()
+
+			proof, err = sb.sealCommitRemote(call)
+		default:
+			sb.checkRateLimit()
+
+			rl := sb.rateLimit
+			if sb.noCommit {
+				rl = make(chan struct{})
+			}
+
+			select { // use whichever is available
+			case vr.sealTasks <- call.task:
+				proof, err = sb.sealCommitRemote(call)
+			case rl <- struct{}{}:
+				proof, err = sb.sealCommitLocal(sectorID, ticket, seed, pieces, rspco)
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			}
+		}*/
+		break
+	}
+
+	/*select { // prefer remote
 	case sb.commitTasks <- call:
 		proof, err = sb.sealCommitRemote(call)
 	default:
@@ -333,7 +386,24 @@ func (sb *SectorBuilder) SealCommit(ctx context.Context, sectorID uint64, ticket
 		case <-ctx.Done():
 			return nil, ctx.Err()
 		}
+	}*/
+
+	if !found{
+		sb.checkRateLimit()
+
+		rl := sb.rateLimit
+		if sb.noCommit {
+			rl = make(chan struct{})
+		}
+
+		select { // use whichever is available
+		case rl <- struct{}{}:
+			proof, err = sb.sealCommitLocal(sectorID, ticket, seed, pieces, rspco)
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		}
 	}
+
 	if err != nil {
 		return nil, xerrors.Errorf("commit: %w", err)
 	}

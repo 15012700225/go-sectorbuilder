@@ -93,8 +93,10 @@ func New(cfg *Config, ds datastore.Batching) (*SectorBuilder, error) {
 		rateLimit:   make(chan struct{}, rlimit),
 
 		taskCtr:        1,
+
 		precommitTasks: make(chan workerCall),
-		commitTasks:    make(chan workerCall),
+		//commitTasks:    make(chan workerCall),
+
 		remoteResults:  map[uint64]chan<- SealRes{},
 		remotes:        map[int]*remote{},
 
@@ -265,6 +267,7 @@ func (sb *SectorBuilder) pubSectorToPriv(sectorInfo SortedPublicSectorInfo, faul
 	}
 	return ffi.NewSortedPrivateSectorInfo(out...), nil
 }
+
 
 func fallbackPostChallengeCount(sectors uint64, faults uint64) uint64 {
 	challengeCount := ElectionPostChallengeCount(sectors, faults)
